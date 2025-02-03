@@ -13,6 +13,9 @@
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
 #include "secrets.h"
+#include "rotswitch.h"
+#include "rotationread.h"
+#include "swr_led.h"
 
 // ----------------------------------------------------------------------------
 // Definition of macros
@@ -240,6 +243,9 @@ void setup() {
     initWiFi();
     initWebSocket();
     initWebServer();
+    initRotarySwitch();
+    initSWRDisplay();
+    initRotRead();
     initStrip();
     strip.setPixelColor(0, 0, 50, 0);
     strip.show();
