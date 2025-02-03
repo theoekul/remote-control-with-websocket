@@ -11,13 +11,17 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
+#include <Adafruit_NeoPixel.h>
+#include "secrets.h"
 
 // ----------------------------------------------------------------------------
 // Definition of macros
 // ----------------------------------------------------------------------------
 
-#define LED_PIN   26
-#define BTN_PIN   22
+#define LED_PIN   4
+#define BTN_PIN   0
+#define NEO_PIN   38
+#define NEO_COUNT 1
 #define HTTP_PORT 80
 
 // ----------------------------------------------------------------------------
@@ -27,9 +31,10 @@
 // Button debouncing
 const uint8_t DEBOUNCE_DELAY = 10; // in milliseconds
 
+
 // WiFi credentials
-const char *WIFI_SSID = "YOUR_WIFI_SSID";
-const char *WIFI_PASS = "YOUR_WIFI_PASSWORD";
+const char *WIFI_SSID = ssid_name;
+const char *WIFI_PASS = ssid_password;
 
 // ----------------------------------------------------------------------------
 // Definition of the LED component
@@ -97,9 +102,10 @@ struct Button {
 // Definition of global variables
 // ----------------------------------------------------------------------------
 
-Led    onboard_led = { LED_BUILTIN, false };
 Led    led         = { LED_PIN, false };
 Button button      = { BTN_PIN, HIGH, 0, 0 };
+
+Adafruit_NeoPixel strip(NEO_COUNT, NEO_PIN, NEO_GRB + NEO_KHZ800);
 
 AsyncWebServer server(HTTP_PORT);
 AsyncWebSocket ws("/ws");
@@ -111,10 +117,6 @@ AsyncWebSocket ws("/ws");
 void initSPIFFS() {
   if (!SPIFFS.begin()) {
     Serial.println("Cannot mount SPIFFS volume...");
-    while (1) {
-        onboard_led.on = millis() % 200 < 50;
-        onboard_led.update();
-    }
   }
 }
 
@@ -156,11 +158,11 @@ void initWebServer() {
 // ----------------------------------------------------------------------------
 
 void notifyClients() {
-    const uint8_t size = JSON_OBJECT_SIZE(1);
-    StaticJsonDocument<size> json;
+    JsonDocument json;
     json["status"] = led.on ? "on" : "off";
+    json["status_vu"] = analogRead(A0);
 
-    char buffer[17];
+    char buffer[200];
     size_t len = serializeJson(json, buffer);
     ws.textAll(buffer, len);
 }
@@ -169,8 +171,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     AwsFrameInfo *info = (AwsFrameInfo*)arg;
     if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
 
-        const uint8_t size = JSON_OBJECT_SIZE(1);
-        StaticJsonDocument<size> json;
+        JsonDocument json;
         DeserializationError err = deserializeJson(json, data);
         if (err) {
             Serial.print(F("deserializeJson() failed with code "));
@@ -181,6 +182,11 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         const char *action = json["action"];
         if (strcmp(action, "toggle") == 0) {
             led.on = !led.on;
+            if (led.on) {
+                strip.setPixelColor(0, 100, 0, 0);
+            } else {
+                strip.setPixelColor(0, 0, 0, 0);
+            }   
             notifyClients();
         }
 
@@ -215,14 +221,18 @@ void initWebSocket() {
     server.addHandler(&ws);
 }
 
+void initStrip() {
+    strip.begin();
+    strip.show();
+}
 // ----------------------------------------------------------------------------
 // Initialization
 // ----------------------------------------------------------------------------
 
 void setup() {
-    pinMode(onboard_led.pin, OUTPUT);
     pinMode(led.pin,         OUTPUT);
     pinMode(button.pin,      INPUT);
+    pinMode(NEO_PIN,         OUTPUT);
 
     Serial.begin(115200); delay(500);
 
@@ -230,11 +240,17 @@ void setup() {
     initWiFi();
     initWebSocket();
     initWebServer();
+    initStrip();
+    strip.setPixelColor(0, 0, 50, 0);
+    strip.show();
 }
 
 // ----------------------------------------------------------------------------
 // Main control loop
 // ----------------------------------------------------------------------------
+
+unsigned long previousMillis = 0;
+uint16_t previousAnalog = 0;
 
 void loop() {
     ws.cleanupClients();
@@ -242,12 +258,27 @@ void loop() {
     button.read();
 
     if (button.pressed()) {
+        Serial.printf(" %s\n", WiFi.localIP().toString().c_str());
         led.on = !led.on;
+        if (led.on) {
+            strip.setPixelColor(0, 100, 0, 0);
+        } else {
+            strip.setPixelColor(0, 0, 0, 0);
+        }        
         notifyClients();
     }
+    uint16_t meas = analogRead(A0);
     
-    onboard_led.on = millis() % 1000 < 50;
-
+    if ((meas > previousAnalog + 30) || (meas < previousAnalog - 30)) {
+        unsigned long currentMillis = millis();
+        if (currentMillis - previousMillis >= 200) {
+            // save the last time you blinked the LED
+            previousMillis = currentMillis;
+            
+            notifyClients();
+            previousAnalog = meas;
+        }
+    }
+    strip.show();
     led.update();
-    onboard_led.update();
 }
