@@ -107,7 +107,7 @@ struct Button {
 Led    led         = { LED_PIN, false };
 Button button      = { BTN_PIN, HIGH, 0, 0 };
 
-Adafruit_NeoPixel strip(NEO_COUNT, NEO_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(NEO_COUNT, NEO_PIN, NEO_GRB + NEO_KHZ800); // initialiserer neopixel strip
 
 AsyncWebServer server(HTTP_PORT);
 AsyncWebSocket ws("/ws");
