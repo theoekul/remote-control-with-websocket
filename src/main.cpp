@@ -245,6 +245,7 @@ void setup() {
     // initRotarySwitch(); // Function not defined, commented out
     initSWRDisplay();
     initRotRead();
+    initRotarySwitch();
     initStrip();
     strip.setPixelColor(0, 0, 50, 0);
     strip.show();
