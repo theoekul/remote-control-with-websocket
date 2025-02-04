@@ -15,7 +15,7 @@ extern "C" {
 #define ROTR_08 13
 
 void initRotRead();
-
+void readRotarySwitch();
 #ifdef __cplusplus
 }
 #endif
