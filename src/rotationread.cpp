@@ -26,15 +26,5 @@ void readRotarySwitch() {
     Serial.print("Rotary switch position: ");
     Serial.println(position);
 }
-    void setup() {
-        Serial.begin(9600);
-        initRotRead();
-    }
+  
 
-    void loop() {
-        readRotarySwitch();
-        delay(500); // Adjust the delay as needed
-    }
-
-
-}
