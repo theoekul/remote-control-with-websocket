@@ -13,7 +13,6 @@
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
 #include "secrets.h"
-#include "rotswitch.h"
 #include "rotationread.h"
 #include "swr_led.h"
 
@@ -127,7 +126,7 @@ void initSPIFFS() {
 // Connecting to the WiFi network
 // ----------------------------------------------------------------------------
 
-void initWiFi() {
+void initWiFi() { //Denne funksjonen kobler til wifi nettverket
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   Serial.printf("Trying to connect [%s] ", WiFi.macAddress().c_str());
@@ -142,15 +141,15 @@ void initWiFi() {
 // Web server initialization
 // ----------------------------------------------------------------------------
 
-String processor(const String &var) {
+String processor(const String &var) { //Denne funksjonen prosesserer variabler som skal sendes til klienten
     return String(var == "STATE" && led.on ? "on" : "off");
 }
 
-void onRootRequest(AsyncWebServerRequest *request) {
+void onRootRequest(AsyncWebServerRequest *request) { //Denne funksjonen sender index.html til klienten
   request->send(SPIFFS, "/index.html", "text/html", false, processor);
 }
 
-void initWebServer() {
+void initWebServer() { //Denne funksjonen setter opp webserveren
     server.on("/", onRootRequest);
     server.serveStatic("/", SPIFFS, "/");
     server.begin();
@@ -160,7 +159,7 @@ void initWebServer() {
 // WebSocket initialization
 // ----------------------------------------------------------------------------
 
-void notifyClients() {
+void notifyClients() { //Denne funksjonen sender meldinger til alle klienter som er koblet til websocketen
     JsonDocument json;
     json["status"] = led.on ? "on" : "off";
     json["status_vu"] = analogRead(A0);
@@ -170,7 +169,7 @@ void notifyClients() {
     ws.textAll(buffer, len);
 }
 
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) { //Denne funksjonen håndterer meldinger som kommer fra websocketen
     AwsFrameInfo *info = (AwsFrameInfo*)arg;
     if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
 
@@ -243,7 +242,7 @@ void setup() {
     initWiFi();
     initWebSocket();
     initWebServer();
-    initRotarySwitch();
+    // initRotarySwitch(); // Function not defined, commented out
     initSWRDisplay();
     initRotRead();
     initStrip();
