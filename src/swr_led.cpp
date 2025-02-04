@@ -4,7 +4,7 @@
 void initSWRDisplay() {
     pinMode(SWRLED_01,      OUTPUT);
     pinMode(SWRLED_02,      OUTPUT);
-    pinMode(SWRLED_03,      OUTPUT);
+    //pinMode(SWRLED_03,      OUTPUT);
     pinMode(SWRLED_04,      OUTPUT);
     pinMode(SWRLED_05,      OUTPUT);
     pinMode(SWRLED_06,      OUTPUT);
