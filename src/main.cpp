@@ -241,11 +241,11 @@ void setup() {
     initSPIFFS();
     initWiFi();
     initWebSocket();
-    initWebServer();
+    //initRotarySwitch(); // Function not defined, commented out
     // initRotarySwitch(); // Function not defined, commented out
     initSWRDisplay();
     initRotRead();
-    initRotarySwitch();
+    //initRotarySwitch(); // Function not defined, commented out
     initStrip();
     strip.setPixelColor(0, 0, 50, 0);
     strip.show();
