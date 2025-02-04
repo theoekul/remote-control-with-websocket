@@ -34,12 +34,3 @@ void initRotarySwitch() { // denne funksjonen er for å lese av rotary switchen 
 
 
 
-void setup() {
-    Serial.begin(9600);
-    initRotarySwitch();
-}
-
-void loop() {
-    initRotarySwitch();
-    delay(500); // Adjust the delay as needed
-}
