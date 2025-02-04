@@ -13,8 +13,8 @@
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
 #include "secrets.h"
-#include "rotationread.h"
-#include "swr_led.h"
+#include "rotationread.h" // inkluerer headerfilen for rotary switchen
+#include "swr_led.h" // inkluerer headerfilen for SWR-displayet
 
 // ----------------------------------------------------------------------------
 // Definition of macros
@@ -241,11 +241,9 @@ void setup() {
     initSPIFFS();
     initWiFi();
     initWebSocket();
-    //initRotarySwitch(); // Function not defined, commented out
-    // initRotarySwitch(); // Function not defined, commented out
+    initWebServer();
     initSWRDisplay();
     initRotRead();
-    //initRotarySwitch(); // Function not defined, commented out
     initStrip();
     strip.setPixelColor(0, 0, 50, 0);
     strip.show();
