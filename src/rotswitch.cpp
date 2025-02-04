@@ -11,7 +11,7 @@ void initRotarySwitch() {
     pinMode(ROTSW_07,      INPUT_PULLDOWN);
     pinMode(ROTSW_08,      INPUT_PULLDOWN);
 }
-void checkRotarySwitch() {
+void initRotarySwitch() {
     int position = 0;
     if (digitalRead(ROTSW_01) == HIGH) position = 1;
     else if (digitalRead(ROTSW_02) == HIGH) position = 2;
@@ -32,6 +32,6 @@ void setup() {
 }
 
 void loop() {
-    checkRotarySwitch();
+    initRotarySwitch();
     delay(500); // Adjust the delay as needed
 }
