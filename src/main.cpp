@@ -246,6 +246,7 @@ void setup() {
     initRotarySwitch();
     initSWRDisplay();
     initRotRead();
+    checkRotarySwitch();
     initStrip();
     strip.setPixelColor(0, 0, 50, 0);
     strip.show();
