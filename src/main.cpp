@@ -237,6 +237,7 @@ void setup() {
     pinMode(NEO_PIN,         OUTPUT);
 
     Serial.begin(115200); delay(500);
+    //Serial.begin(9600);
 
     initSPIFFS();
     initWiFi();
@@ -258,9 +259,11 @@ uint16_t previousAnalog = 0;
 
 void loop() {
     ws.cleanupClients();
-
+    
     button.read();
 
+    readRotarySwitch();
+    delay(500); // Adjust the delay as needed
     if (button.pressed()) {
         Serial.printf(" %s\n", WiFi.localIP().toString().c_str());
         led.on = !led.on;
