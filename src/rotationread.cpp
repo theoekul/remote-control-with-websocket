@@ -13,15 +13,15 @@ void initRotRead() {
 }
 // denne funksjonen er for å lese av rotary switchen og skrive ut posisjonen til serial monitor
 void readRotarySwitch() { 
-    int position = 0;
-    if (digitalRead(ROTR_01) == HIGH) position = 1;
-    else if (digitalRead(ROTR_02) == HIGH) position = 2;
-    else if (digitalRead(ROTR_03) == HIGH) position = 3;
-    else if (digitalRead(ROTR_04) == HIGH) position = 4;
-    else if (digitalRead(ROTR_05) == HIGH) position = 5;
-    else if (digitalRead(ROTR_06) == HIGH) position = 6;
-    else if (digitalRead(ROTR_07) == HIGH) position = 7;
-    else if (digitalRead(ROTR_08) == HIGH) position = 8;
+    String position = "Ingen posisjon";
+    if (digitalRead(ROTR_01) == HIGH) position = "Sør"; // 1
+    else if (digitalRead(ROTR_02) == HIGH) position = "Sørvest"; // 2
+    else if (digitalRead(ROTR_03) == HIGH) position = "Vest"; // 3
+    else if (digitalRead(ROTR_04) == HIGH) position = "Nordvest"; // 4
+    else if (digitalRead(ROTR_05) == HIGH) position = "Nord"; // 5
+    else if (digitalRead(ROTR_06) == HIGH) position = "Nordøst"; // 6
+    else if (digitalRead(ROTR_07) == HIGH) position = "Øst"; // 7
+    else if (digitalRead(ROTR_08) == HIGH) position = "Sørøst"; // 8
     else Serial.println("No position detected");
     Serial.print("Rotary switch position: ");
     Serial.println(position);
