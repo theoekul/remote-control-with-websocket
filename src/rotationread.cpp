@@ -26,5 +26,6 @@ void readRotarySwitch() {
     Serial.print("Rotary switch position: ");
     Serial.println(position);
 }
+
   
 
