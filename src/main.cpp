@@ -8,13 +8,14 @@
 
 #include <Arduino.h>
 #include <SPIFFS.h>
+#include <Wire.h> // Include Wire library for I2C
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
 #include "secrets.h"
-#include "rotationread.h" // inkluerer headerfilen for rotary switchen
-#include "swr_led.h" // inkluerer headerfilen for SWR-displayet
+#include "rotationread.h" // Include header file for rotary switch
+#include "swr_led.h" // Include header file for SWR display
 
 // ----------------------------------------------------------------------------
 // Definition of macros
@@ -25,6 +26,7 @@
 #define NEO_PIN   38
 #define NEO_COUNT 1
 #define HTTP_PORT 80
+#define I2C_EXPANDER_ADDR 0x74 // I2C expander address
 
 // ----------------------------------------------------------------------------
 // Definition of global constants
@@ -32,7 +34,6 @@
 
 // Button debouncing
 const uint8_t DEBOUNCE_DELAY = 10; // in milliseconds
-
 
 // WiFi credentials
 const char *WIFI_SSID = ssid_name;
@@ -227,6 +228,21 @@ void initStrip() {
     strip.begin();
     strip.show();
 }
+
+// ----------------------------------------------------------------------------
+// I2C Expander initialization
+// ----------------------------------------------------------------------------
+
+void initI2CExpander() {
+    Wire.begin(); // Initialize I2C communication
+    Wire.beginTransmission(I2C_EXPANDER_ADDR);
+    if (Wire.endTransmission() == 0) {
+        Serial.println("I2C Expander initialized successfully.");
+    } else {
+        Serial.println("Failed to initialize I2C Expander.");
+    }
+}
+
 // ----------------------------------------------------------------------------
 // Initialization
 // ----------------------------------------------------------------------------
@@ -246,6 +262,7 @@ void setup() {
     initSWRDisplay();
     initRotRead();
     initStrip();
+    initI2CExpander(); // Initialize I2C expander
     strip.setPixelColor(0, 0, 50, 0);
     strip.show();
 }
