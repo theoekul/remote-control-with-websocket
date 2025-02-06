@@ -8,25 +8,26 @@
 
 #include <Arduino.h>
 #include <SPIFFS.h>
-#include <Wire.h> // Include Wire library for I2C
 #include <WiFi.h>
+#include <Wire.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 #include <Adafruit_NeoPixel.h>
 #include "secrets.h"
 #include "rotationread.h" // Include header file for rotary switch
 #include "swr_led.h" // Include header file for SWR display
+#include "I2C.h"
 
 // ----------------------------------------------------------------------------
 // Definition of macros
 // ----------------------------------------------------------------------------
-
+#define I2C_EXPANDER_ADDR 39// I2C expander address sdl
 #define LED_PIN   4
 #define BTN_PIN   0
 #define NEO_PIN   38
 #define NEO_COUNT 1
 #define HTTP_PORT 80
-#define I2C_EXPANDER_ADDR 0x74 // I2C expander address
+
 
 // ----------------------------------------------------------------------------
 // Definition of global constants
@@ -234,14 +235,22 @@ void initStrip() {
 // ----------------------------------------------------------------------------
 
 void initI2CExpander() {
-    Wire.begin(); // Initialize I2C communication
-    Wire.beginTransmission(I2C_EXPANDER_ADDR);
-    if (Wire.endTransmission() == 0) {
-        Serial.println("I2C Expander initialized successfully.");
-    } else {
+    Wire.begin(21,47); // Initialize I2C communication
+    unsigned long startTime = millis();
+    bool initialized = false;
+    while (millis() - startTime < 5000) { // 5 seconds timeout
+        Wire.beginTransmission(I2C_EXPANDER_ADDR);
+        if (Wire.endTransmission() == 0) {
+            Serial.println("I2C Expander initialized successfully.");
+            initialized = true;
+            break;
+        }
+    }
+    if (!initialized) {
         Serial.println("Failed to initialize I2C Expander.");
     }
 }
+
 
 // ----------------------------------------------------------------------------
 // Initialization
@@ -252,7 +261,7 @@ void setup() {
     pinMode(button.pin,      INPUT);
     pinMode(NEO_PIN,         OUTPUT);
 
-    Serial.begin(115200); delay(500);
+    Serial.begin(115200);
     //Serial.begin(9600);
 
     initSPIFFS();
@@ -265,6 +274,19 @@ void setup() {
     initI2CExpander(); // Initialize I2C expander
     strip.setPixelColor(0, 0, 50, 0);
     strip.show();
+    // Initialize the I2C communication (specify SDA and SCL pins for ESP32)
+    Wire.begin(21, 22);  // GPIO21 for SDA, GPIO22 for SCL on ESP32
+    // Initialize Serial monitor for debugging
+    Serial.begin(115200);
+    // Set all pins to output by default (this is for demonstration)
+    // You can change the configuration depending on your needs.
+    //initPinDirection(0xFF);  // Set all pins as output (0xFF = all 1s)
+    delay(1000);  // Wait for configuration
+    // Set all pins to high (turn on)
+    //writeOutputPort(0xFF);
+    delay(1000);  // Wait for 1 second
+    // Set all pins to low (turn off)
+    writeOutputPort(0x00);
 }
 
 // ----------------------------------------------------------------------------
@@ -303,6 +325,12 @@ void loop() {
             previousAnalog = meas;
         }
     }
+    // Read the current state of the input pins (if used as input)
+      
+    delay(500);  // Delay for half a second
+    uint8_t inputState = readInputPort();
+    Serial.print("Input State: ");
+    Serial.println(inputState, BIN);
     strip.show();
     led.update();
 }

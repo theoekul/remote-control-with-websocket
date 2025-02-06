@@ -23,7 +23,6 @@ void readRotarySwitch() {
     else if (digitalRead(ROTR_07) == HIGH) position = "Øst"; // 7
     else if (digitalRead(ROTR_08) == HIGH) position = "Sørøst"; // 8
     else Serial.println("No position detected");
-    delay(5000);
     Serial.print("Rotary switch position: ");
     Serial.println(position);
 }
