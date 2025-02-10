@@ -51,7 +51,7 @@ struct Led {
 
     // methods
     void update() {
-        digitalWrite(pin, on ? HIGH : LOW);
+        digitalWrite(pin, on ? HIGH : LOW); // Update the LED state
     }
 };
 
@@ -108,9 +108,7 @@ struct Button {
 
 Led    led         = { LED_PIN, false };
 Button button      = { BTN_PIN, HIGH, 0, 0 };
-
-Adafruit_NeoPixel strip(NEO_COUNT, NEO_PIN, NEO_GRB + NEO_KHZ800); // initialiserer neopixel strip
-
+Adafruit_NeoPixel strip(NEO_COUNT, NEO_PIN, NEO_GRB + NEO_KHZ800); // Initialize NeoPixel strip
 AsyncWebServer server(HTTP_PORT);
 AsyncWebSocket ws("/ws");
 
@@ -128,7 +126,7 @@ void initSPIFFS() {
 // Connecting to the WiFi network
 // ----------------------------------------------------------------------------
 
-void initWiFi() { //Denne funksjonen kobler til wifi nettverket
+void initWiFi() { // This function connects to the WiFi network
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   Serial.printf("Trying to connect [%s] ", WiFi.macAddress().c_str());
@@ -143,15 +141,15 @@ void initWiFi() { //Denne funksjonen kobler til wifi nettverket
 // Web server initialization
 // ----------------------------------------------------------------------------
 
-String processor(const String &var) { //Denne funksjonen prosesserer variabler som skal sendes til klienten
+String processor(const String &var) { // This function processes variables to be sent to the client
     return String(var == "STATE" && led.on ? "on" : "off");
 }
 
-void onRootRequest(AsyncWebServerRequest *request) { //Denne funksjonen sender index.html til klienten
+void onRootRequest(AsyncWebServerRequest *request) { // This function sends index.html to the client
   request->send(SPIFFS, "/index.html", "text/html", false, processor);
 }
 
-void initWebServer() { //Denne funksjonen setter opp webserveren
+void initWebServer() { // This function sets up the web server
     server.on("/", onRootRequest);
     server.serveStatic("/", SPIFFS, "/");
     server.begin();
@@ -161,7 +159,7 @@ void initWebServer() { //Denne funksjonen setter opp webserveren
 // WebSocket initialization
 // ----------------------------------------------------------------------------
 
-void notifyClients() { //Denne funksjonen sender meldinger til alle klienter som er koblet til websocketen
+void notifyClients() { // This function sends messages to all clients connected to the WebSocket
     JsonDocument json;
     json["status"] = led.on ? "on" : "off";
     json["status_vu"] = analogRead(A0);
@@ -171,7 +169,7 @@ void notifyClients() { //Denne funksjonen sender meldinger til alle klienter som
     ws.textAll(buffer, len);
 }
 
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) { //Denne funksjonen håndterer meldinger som kommer fra websocketen
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) { // This function handles messages from the WebSocket
     AwsFrameInfo *info = (AwsFrameInfo*)arg;
     if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
 
@@ -183,7 +181,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) { //Denne funk
             return;
         }
 
-        const char *action = json["action"];
+        const char *action = json["action"]; // This switch statement handles the different actions that can be performed
         if (strcmp(action, "toggle") == 0) {
             led.on = !led.on;
             if (led.on) {
@@ -197,14 +195,14 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) { //Denne funk
     }
 }
 
-void onEvent(AsyncWebSocket       *server,
+void onEvent(AsyncWebSocket       *server, // This function handles events from the WebSocket
              AsyncWebSocketClient *client,
              AwsEventType          type,
              void                 *arg,
              uint8_t              *data,
              size_t                len) {
 
-    switch (type) {
+    switch (type) { // This switch statement handles the different types of events that can occur
         case WS_EVT_CONNECT:
             Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
             break;
@@ -220,12 +218,12 @@ void onEvent(AsyncWebSocket       *server,
     }
 }
 
-void initWebSocket() {
+void initWebSocket() { // This function initializes the WebSocket
     ws.onEvent(onEvent);
     server.addHandler(&ws);
 }
 
-void initStrip() {
+void initStrip() { // This function initializes the NeoPixel strip
     strip.begin();
     strip.show();
 }
@@ -256,7 +254,7 @@ void initI2CExpander() {
 // Initialization
 // ----------------------------------------------------------------------------
 
-void setup() {
+void setup() { // This function initializes the program and sets up the components
     pinMode(led.pin,         OUTPUT);
     pinMode(button.pin,      INPUT);
     pinMode(NEO_PIN,         OUTPUT);
@@ -271,7 +269,6 @@ void setup() {
     initSWRDisplay();
     initRotRead();
     initStrip();
-    initI2CExpander(); // Initialize I2C expander
     strip.setPixelColor(0, 0, 50, 0);
     strip.show();
     // Initialize the I2C communication (specify SDA and SCL pins for ESP32)
@@ -296,7 +293,7 @@ void setup() {
 unsigned long previousMillis = 0;
 uint16_t previousAnalog = 0;
 
-void loop() {
+void loop() { // This function is the main loop of the program and is responsible for reading the button, rotary switch and updating the LED
     ws.cleanupClients();
     
     button.read();
@@ -315,7 +312,7 @@ void loop() {
     }
     uint16_t meas = analogRead(A0);
     
-    if ((meas > previousAnalog + 30) || (meas < previousAnalog - 30)) {
+    if ((meas > previousAnalog + 30) || (meas < previousAnalog - 30)) { //Denne delen av koden er for å oppdatere SWR displayet
         unsigned long currentMillis = millis();
         if (currentMillis - previousMillis >= 200) {
             // save the last time you blinked the LED
