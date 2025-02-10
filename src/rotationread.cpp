@@ -1,16 +1,6 @@
 #include <Arduino.h>
 #include "rotationread.h"
 
-#define LED_1 7
-#define LED_2 10
-#define LED_3 11
-#define LED_4 12
-#define LED_5 13
-#define LED_6 14
-#define LED_7 15
-#define LED_8 16
-#define LED_9 17
-
 void initRotRead() {
     pinMode(ROTR_01,  INPUT);
     pinMode(ROTR_02,  INPUT);

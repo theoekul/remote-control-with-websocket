@@ -15,6 +15,7 @@
 #include "secrets.h"
 #include "rotationread.h" // Include header file for rotary switch
 #include "swr_led.h" // Include header file for SWR display
+#include <Wire.h> // Include Wire library for I2C communication
 
 // ----------------------------------------------------------------------------
 // Definition of macros
@@ -25,6 +26,7 @@
 #define NEO_PIN   38
 #define NEO_COUNT 1
 #define HTTP_PORT 80
+#define TCA9539_ADDR 0x74  // Default I2C address (A0, A1, A2 = GND)
 
 // ----------------------------------------------------------------------------
 // Definition of global constants
@@ -243,8 +245,18 @@ void setup() { // This function initializes the program and sets up the componen
     initSWRDisplay();
     initRotRead();
     initStrip();
+
     strip.setPixelColor(0, 0, 50, 0);
     strip.show();
+    Wire.begin();
+    Serial.begin(9600);
+
+    // Configure Port 0 as OUTPUT (0x00), Port 1 as INPUT (0xFF)
+    Wire.beginTransmission(TCA9539_ADDR);
+    Wire.write(0x06);  // Configuration Register 0
+    Wire.write(0x00);  // Set all P0 pins as output
+    Wire.write(0xFF);  // Set all P1 pins as input
+    Wire.endTransmission();
 }
 
 // ----------------------------------------------------------------------------
@@ -253,6 +265,7 @@ void setup() { // This function initializes the program and sets up the componen
 
 unsigned long previousMillis = 0;
 uint16_t previousAnalog = 0;
+uint16_t meas = 0; // Define the meas variable
 
 void loop() { // This function is the main loop of the program and is responsible for reading the button, rotary switch and updating the LED
     ws.cleanupClients();
@@ -271,7 +284,33 @@ void loop() { // This function is the main loop of the program and is responsibl
         }        
         notifyClients();
     }
-    uint16_t meas = analogRead(A0);
+    // Write HIGH (0xFF) to Port 0
+    Wire.beginTransmission(TCA9539_ADDR);
+    Wire.write(0x02);  // Output Port 0
+    Wire.write(0xFF);  // Set all HIGH
+    Wire.endTransmission();
+
+    delay(1000);
+
+    // Write LOW (0x00) to Port 0
+    Wire.beginTransmission(TCA9539_ADDR);
+    Wire.write(0x02);  // Output Port 0
+    Wire.write(0x00);  // Set all LOW
+    Wire.endTransmission();
+
+    delay(1000);
+
+    // Read input from Port 1
+    Wire.beginTransmission(TCA9539_ADDR);
+    Wire.write(0x01);  // Input Port 1
+    Wire.endTransmission();
+    Wire.requestFrom(TCA9539_ADDR, 1);
+    if (Wire.available()) {
+        byte inputData = Wire.read();
+        Serial.print("Port 1 State: ");
+        Serial.println(inputData, BIN);
+
+    delay(500);
     
     if ((meas > previousAnalog + 30) || (meas < previousAnalog - 30)) { //Denne delen av koden er for å oppdatere SWR displayet
         unsigned long currentMillis = millis();
