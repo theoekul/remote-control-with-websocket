@@ -1,6 +1,16 @@
 #include <Arduino.h>
 #include "rotationread.h"
 
+#define LED_1 7
+#define LED_2 10
+#define LED_3 11
+#define LED_4 12
+#define LED_5 13
+#define LED_6 14
+#define LED_7 15
+#define LED_8 16
+#define LED_9 17
+
 void initRotRead() {
     pinMode(ROTR_01,  INPUT);
     pinMode(ROTR_02,  INPUT);
@@ -14,6 +24,7 @@ void initRotRead() {
 // denne funksjonen er for å lese av rotary switchen og skrive ut posisjonen til serial monitor
 void readRotarySwitch() { 
     String position = "Ingen posisjon";
+    delay(50); // debounce delay
     if (digitalRead(ROTR_01) == HIGH) position = "Sør"; // 1
     else if (digitalRead(ROTR_02) == HIGH) position = "Sørvest"; // 2
     else if (digitalRead(ROTR_03) == HIGH) position = "Vest"; // 3
@@ -22,11 +33,37 @@ void readRotarySwitch() {
     else if (digitalRead(ROTR_06) == HIGH) position = "Nordøst"; // 6
     else if (digitalRead(ROTR_07) == HIGH) position = "Øst"; // 7
     else if (digitalRead(ROTR_08) == HIGH) position = "Sørøst"; // 8
-    else Serial.println("No position detected");
-    delay(5000);
+    else position = "No position detected";
     Serial.print("Rotary switch position: ");
     Serial.println(position);
 }
+void updateLEDsBasedOnPosition() { // denne funksjonen er for å skru av og på LED basert på posisjonen til rotary switchen
+    if (digitalRead(ROTR_01) == HIGH) { 
+        digitalWrite(LED_5, HIGH); 
+    } else if (digitalRead(ROTR_05) == HIGH) {
+        digitalWrite(LED_1, HIGH);
+    } else if (digitalRead(ROTR_02) == HIGH) {
+        digitalWrite(LED_4, HIGH);
+    } else if (digitalRead(ROTR_06) == HIGH) {
+        digitalWrite(LED_2, HIGH);
+    } else if (digitalRead(ROTR_03) == HIGH) {
+        digitalWrite(LED_3, HIGH);
+    } else if (digitalRead(ROTR_07) == HIGH) {
+        digitalWrite(LED_7, HIGH);
+    } else if (digitalRead(ROTR_04) == HIGH) {
+        digitalWrite(LED_6, HIGH);
+    } else if (digitalRead(ROTR_08) == HIGH) {
+        digitalWrite(LED_8, HIGH);
+    } else {
+        digitalWrite(LED_1, LOW);
+        digitalWrite(LED_2, LOW);
+        digitalWrite(LED_3, LOW);
+        digitalWrite(LED_4, LOW);
+        digitalWrite(LED_5, LOW);
+        digitalWrite(LED_6, LOW);
+        digitalWrite(LED_7, LOW);
+        digitalWrite(LED_8, LOW);
+    }
+}
 
-  
 
