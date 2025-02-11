@@ -5,7 +5,7 @@
  * © 2020 Stéphane Calderoni
  * ----------------------------------------------------------------------------
  */
-/*
+
  #include <Arduino.h>
  #include <SPIFFS.h>
  #include <WiFi.h>
@@ -14,9 +14,6 @@
  #include <ArduinoJson.h>
  #include <Adafruit_NeoPixel.h>
  #include "secrets.h"
- #include "rotationread.h" // Include header file for rotary switch
- #include "swr_led.h" // Include header file for SWR display
- #include "I2C.h"
  
  // ----------------------------------------------------------------------------
  // Definition of macros
@@ -37,8 +34,8 @@
  const uint8_t DEBOUNCE_DELAY = 10; // in milliseconds
  
  // WiFi credentials
- const char *WIFI_SSID = ssid_name;
- const char *WIFI_PASS = ssid_password;
+ const char *WIFI_SSID = "your_ssid_name";
+ const char *WIFI_PASS = "your_ssid_password";
  
  // ----------------------------------------------------------------------------
  // Definition of the LED component
@@ -279,6 +276,70 @@
  }
  
  // ----------------------------------------------------------------------------
+ // Rotary Switch and LED Control
+ // ----------------------------------------------------------------------------
+ 
+ #define ROTR_01 8
+ #define ROTR_02 3
+ #define ROTR_03 46
+ #define ROTR_04 9
+ #define ROTR_05 10
+ #define ROTR_06 11
+ #define ROTR_07 12
+ #define ROTR_08 13
+ 
+ void initRotRead() {
+     pinMode(ROTR_01,  INPUT);
+     pinMode(ROTR_02,  INPUT);
+     pinMode(ROTR_03,  INPUT);
+     pinMode(ROTR_04,  INPUT);
+     pinMode(ROTR_05,  INPUT);
+     pinMode(ROTR_06,  INPUT);
+     pinMode(ROTR_07,  INPUT);
+     pinMode(ROTR_08,  INPUT);
+ }
+ 
+ void readRotarySwitch() {
+     String position = "Ingen posisjon";
+     delay(50); // debounce delay
+     if (digitalRead(ROTR_01) == HIGH) position = "Sør"; // 1
+     else if (digitalRead(ROTR_02) == HIGH) position = "Sørvest"; // 2
+     else if (digitalRead(ROTR_03) == HIGH) position = "Vest"; // 3
+     else if (digitalRead(ROTR_04) == HIGH) position = "Nordvest"; // 4
+     else if (digitalRead(ROTR_05) == HIGH) position = "Nord"; // 5
+     else if (digitalRead(ROTR_06) == HIGH) position = "Nordøst"; // 6
+     else if (digitalRead(ROTR_07) == HIGH) position = "Øst"; // 7
+     else if (digitalRead(ROTR_08) == HIGH) position = "Sørøst"; // 8
+     else position = "No position detected";
+     Serial.print("Rotary switch position: ");
+     Serial.println(position);
+ }
+ 
+ void updateLEDsBasedOnPosition() {
+     uint8_t ledState = 0x00; // Initialize all LEDs to off
+ 
+     if (digitalRead(ROTR_01) == HIGH) {
+         ledState |= (1 << 4); // Turn on LED_5
+     } else if (digitalRead(ROTR_05) == HIGH) {
+         ledState |= (1 << 0); // Turn on LED_1
+     } else if (digitalRead(ROTR_02) == HIGH) {
+         ledState |= (1 << 3); // Turn on LED_4
+     } else if (digitalRead(ROTR_06) == HIGH) {
+         ledState |= (1 << 1); // Turn on LED_2
+     } else if (digitalRead(ROTR_03) == HIGH) {
+         ledState |= (1 << 2); // Turn on LED_3
+     } else if (digitalRead(ROTR_07) == HIGH) {
+         ledState |= (1 << 6); // Turn on LED_7
+     } else if (digitalRead(ROTR_04) == HIGH) {
+         ledState |= (1 << 5); // Turn on LED_6
+     } else if (digitalRead(ROTR_08) == HIGH) {
+         ledState |= (1 << 7); // Turn on LED_8
+     }
+ 
+     writeOutputPort(ledState); // Update the LED states
+ }
+ 
+ // ----------------------------------------------------------------------------
  // Initialization
  // ----------------------------------------------------------------------------
  
@@ -298,10 +359,10 @@
      initWiFi();
      initWebSocket();
      initWebServer();
-     initSWRDisplay();   
+     // initSWRDisplay(); // Commented out as it is undefined
      initRotRead();
      initStrip();
-     initupdateLEDsBasedOnPosition();
+     updateLEDsBasedOnPosition();
      initI2CExpander();
  
      strip.setPixelColor(0, 0, 50, 0);
@@ -316,7 +377,7 @@
      button.read();
  
      // Call the function to read the rotary switch position
-     initreadRotarySwitch();
+     readRotarySwitch();
      delay(500); // Adjust the delay as needed
  
      if (button.pressed()) {
@@ -376,4 +437,3 @@
      Serial.println(inputState, BIN);
      strip.show();
  }
- */

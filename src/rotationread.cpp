@@ -1,3 +1,4 @@
+/*
 #include <Arduino.h>
 #include "rotationread.h"
 
@@ -11,8 +12,8 @@ void initRotRead() {
     pinMode(ROTR_07,  INPUT);
     pinMode(ROTR_08,  INPUT);
 }
-// denne funksjonen er for å lese av rotary switchen og skrive ut posisjonen til serial monitor
-void initreadRotarySwitch() { 
+
+void initreadRotarySwitch() {
     String position = "Ingen posisjon";
     delay(50); // debounce delay
     if (digitalRead(ROTR_01) == HIGH) position = "Sør"; // 1
@@ -27,6 +28,7 @@ void initreadRotarySwitch() {
     Serial.print("Rotary switch position: ");
     Serial.println(position);
 }
+
 void initupdateLEDsBasedOnPosition() { // denne funksjonen er for å skru av og på LED basert på posisjonen til rotary switchen
     if (digitalRead(ROTR_01) == HIGH) { 
         digitalWrite(LED_5, HIGH); 
@@ -56,4 +58,4 @@ void initupdateLEDsBasedOnPosition() { // denne funksjonen er for å skru av og 
     }
 }
 
-
+*/
