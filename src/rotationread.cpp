@@ -12,7 +12,7 @@ void initRotRead() {
     pinMode(ROTR_08,  INPUT);
 }
 // denne funksjonen er for å lese av rotary switchen og skrive ut posisjonen til serial monitor
-void readRotarySwitch() { 
+void initreadRotarySwitch() { 
     String position = "Ingen posisjon";
     delay(50); // debounce delay
     if (digitalRead(ROTR_01) == HIGH) position = "Sør"; // 1
@@ -27,7 +27,7 @@ void readRotarySwitch() {
     Serial.print("Rotary switch position: ");
     Serial.println(position);
 }
-void updateLEDsBasedOnPosition() { // denne funksjonen er for å skru av og på LED basert på posisjonen til rotary switchen
+void initupdateLEDsBasedOnPosition() { // denne funksjonen er for å skru av og på LED basert på posisjonen til rotary switchen
     if (digitalRead(ROTR_01) == HIGH) { 
         digitalWrite(LED_5, HIGH); 
     } else if (digitalRead(ROTR_05) == HIGH) {

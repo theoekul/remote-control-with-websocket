@@ -270,11 +270,13 @@ void setup() { // This function initializes the program and sets up the componen
     initSWRDisplay();
     initRotRead();
     initStrip();
+    initupdateLEDsBasedOnPosition();
+    initreadRotarySwitch();
 
     strip.setPixelColor(0, 0, 50, 0);
     strip.show();
     // Initialize the I2C communication (specify SDA and SCL pins for ESP32)
-    Wire.begin(21, 22);  // GPIO21 for SDA, GPIO22 for SCL on ESP32
+    Wire.begin(21, 47);  // GPIO21 for SDA, GPIO22 for SCL on ESP32
     // Initialize Serial monitor for debugging
     Serial.begin(115200);
     // Set all pins to output by default (this is for demonstration)
@@ -301,7 +303,7 @@ void loop() { // This function is the main loop of the program and is responsibl
     
     button.read();
 
-    readRotarySwitch();
+    initreadRotarySwitch();
     delay(500); // Adjust the delay as needed
     if (button.pressed()) {
         Serial.printf(" %s\n", WiFi.localIP().toString().c_str());
@@ -359,4 +361,5 @@ void loop() { // This function is the main loop of the program and is responsibl
     Serial.println(inputState, BIN);
     strip.show();
     led.update();
+}
 }

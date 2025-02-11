@@ -27,8 +27,8 @@ extern "C" {
 
 
 void initRotRead();
-void readRotarySwitch();
-void updateLEDsBasedOnPosition();
+void initreadRotarySwitch();
+void initupdateLEDsBasedOnPosition();
 #ifdef __cplusplus
 }
 #endif
