@@ -5,7 +5,7 @@
  * © 2020 Stéphane Calderoni
  * ----------------------------------------------------------------------------
  */
-
+/*
  #include <Arduino.h>
  #include <SPIFFS.h>
  #include <WiFi.h>
@@ -381,29 +381,29 @@ uint8_t readInputPort() {
  }
  
 void updateLEDsBasedOnPosition() {
-    uint32_t ledState = 0x00; // Initialize all LEDs to off
+    uint8_t ledState = 0x00; // Initialize all LEDs to off
     if (digitalRead(ROTR_01) == HIGH) {
-        ledState = (1 << 12); // S
+        ledState |= (1 << 0); // S
     } else if (digitalRead(ROTR_02) == HIGH) {
-        ledState = (1 << 11); // SW
+        ledState |= (1 << 1); // SW
     } else if (digitalRead(ROTR_03) == HIGH) {
-        ledState = (1 << 10); // W
+        ledState |= (1 << 2); // W
     } else if (digitalRead(ROTR_04) == HIGH) {
-        ledState = (1 << 7); // NW
+        ledState |= (1 << 3); // NW
     } else if (digitalRead(ROTR_05) == HIGH) {
-        ledState = (1 << 14); // N
+        ledState |= (1 << 4); // N
     } else if (digitalRead(ROTR_06) == HIGH) {
-        ledState = (1 << 17); // NE
+        ledState |= (1 << 5); // NE
     } else if (digitalRead(ROTR_07) == HIGH) {
-        ledState = (1 << 16); // E
+        ledState |= (1 << 6); // E
     } else if (digitalRead(ROTR_08) == HIGH) {
-        ledState = (1 << 15); // SE
+        ledState |= (1 << 7); // SE
     } else {
-        ledState = (1 << 13); // Red LED in middle
+        ledState = 0x00; // All LEDs off
     }
 
     writeOutputPort(ledState); // Update the I2C expander with the new LED state
- }
+}
  
  // ----------------------------------------------------------------------------
  // Initialization
@@ -444,6 +444,7 @@ void updateLEDsBasedOnPosition() {
  
      // Call the function to read the rotary switch position
      readRotarySwitch();
+     updateLEDsBasedOnPosition(); // Update LEDs based on the rotary switch position
      delay(500); // Adjust the delay as needed
  
      if (button.pressed()) {
@@ -504,3 +505,4 @@ void updateLEDsBasedOnPosition() {
      strip.show();
  }
 
+*/
