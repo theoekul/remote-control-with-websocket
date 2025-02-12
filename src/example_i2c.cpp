@@ -1,3 +1,4 @@
+/*
 void setup() {
      ....
      Serial.printf("Init I2C");
@@ -19,17 +20,18 @@ void loop() {
 ...
 if (button.pressed()) {
      ...
-     Wire.beginTransmission(0x74);
+     Wire.beginTransmission(0x74); // Set all LOW
      Wire.write(0x03);  // Output Port 1
      Wire.write(0xFF);  // Set all LOW
-     Wire.endTransmission();
+     Wire.endTransmission(); // Set all HIGH
      delay(1000);
 
-     Wire.beginTransmission(0x74);
+     Wire.beginTransmission(0x74); // Set all HIGH
      Wire.write(0x03);  // Output Port 1
      Wire.write(0x00);  // Set all LOW
-     Wire.endTransmission();
+     Wire.endTransmission(); // Set all HIGH
      delay(1000);
      ...
      }
 }
+*/
