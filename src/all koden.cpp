@@ -162,7 +162,7 @@
  // ----------------------------------------------------------------------------
  
  void notifyClients() { // This function sends messages to all clients connected to the WebSocket
-     StaticJsonDocument<200> json;
+    DynamicJsonDocument json(200);
      json["status"] = led.on ? "on" : "off";
      json["status_vu"] = analogRead(A0);
  
@@ -175,7 +175,7 @@
      AwsFrameInfo *info = (AwsFrameInfo*)arg;
      if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
  
-         StaticJsonDocument<200> json;
+         DynamicJsonDocument json(200);
          DeserializationError err = deserializeJson(json, data);
          if (err) {
              Serial.print(F("deserializeJson() failed with code "));
@@ -250,36 +250,96 @@
          Serial.println("Failed to initialize I2C Expander.");
      }
  }
- 
- void writeOutputPort(uint8_t value) {
-     unsigned long startTime = millis();
-     while (millis() - startTime < 1000) { // 1 second timeout
-         Wire.beginTransmission(TCA9539_ADDR);
-         Wire.write(0x02);  // Output Port 0
-         Wire.write(value);  // Set output value
-         if (Wire.endTransmission() == 0) {
-             return; // Success
-         }
-     }
-     Serial.println("Failed to write to I2C Expander.");
- }
- 
- uint8_t readInputPort() {
-     unsigned long startTime = millis();
-     while (millis() - startTime < 1000) { // 1 second timeout
-         Wire.beginTransmission(TCA9539_ADDR);
-         Wire.write(0x01);  // Input Port 1
-         if (Wire.endTransmission() == 0) {
-             Wire.requestFrom(TCA9539_ADDR, 1);
-             if (Wire.available()) {
-                 return Wire.read();
-             }
-         }
-     }
-     Serial.println("Failed to read from I2C Expander.");
-     return 0;
- }
- 
+// ----------------------------------------------------------------------------
+// I2C Expander Status
+// ----------------------------------------------------------------------------
+
+enum I2CStatus {
+    I2C_DISCONNECTED,
+    I2C_SEARCHING,
+    I2C_CONNECTED,
+    I2C_COMM_ERROR
+};
+
+I2CStatus i2cStatus = I2C_DISCONNECTED;
+
+void updateI2CStatus() {
+    switch (i2cStatus) {
+        case I2C_DISCONNECTED:
+            Serial.println("I2C Status: Disconnected");
+            break;
+        case I2C_SEARCHING:
+            Serial.println("I2C Status: Searching...");
+            break;
+        case I2C_CONNECTED:
+            Serial.println("I2C Status: Connected");
+            break;
+        case I2C_COMM_ERROR:
+            Serial.println("I2C Status: Communication Error");
+            break;
+    }
+}
+
+void initI2CExpanderStart() {
+    Wire.begin(21, 47); // Initialize I2C communication
+    unsigned long startTime = millis();
+    bool initialized = false;
+    i2cStatus = I2C_SEARCHING;
+    updateI2CStatus();
+    while (millis() - startTime < 5000) { // 5 seconds timeout
+        Wire.beginTransmission(I2C_EXPANDER_ADDR);
+        if (Wire.endTransmission() == 0) {
+            Serial.println("I2C Expander initialized successfully.");
+            initialized = true;
+            i2cStatus = I2C_CONNECTED;
+            updateI2CStatus();
+            break;
+        }
+    }
+    if (!initialized) {
+        Serial.println("Failed to initialize I2C Expander.");
+        i2cStatus = I2C_DISCONNECTED;
+        updateI2CStatus();
+    }
+}
+
+void writeOutputPort(uint8_t value) {
+    unsigned long startTime = millis();
+    while (millis() - startTime < 1000) { // 1 second timeout
+        Wire.beginTransmission(TCA9539_ADDR);
+        Wire.write(0x02);  // Output Port 0
+        Wire.write(value);  // Set output value
+        if (Wire.endTransmission() == 0) {
+            i2cStatus = I2C_CONNECTED;
+            updateI2CStatus();
+            return; // Success
+        }
+    }
+    Serial.println("Failed to write to I2C Expander.");
+    i2cStatus = I2C_COMM_ERROR;
+    updateI2CStatus();
+}
+
+uint8_t readInputPort() {
+    unsigned long startTime = millis();
+    while (millis() - startTime < 1000) { // 1 second timeout
+        Wire.beginTransmission(TCA9539_ADDR);
+        Wire.write(0x01);  // Input Port 1
+        if (Wire.endTransmission() == 0) {
+            Wire.requestFrom(TCA9539_ADDR, 1);
+            if (Wire.available()) {
+                i2cStatus = I2C_CONNECTED;
+                updateI2CStatus();
+                return Wire.read();
+            }
+        }
+    }
+    Serial.println("Failed to read from I2C Expander.");
+    i2cStatus = I2C_COMM_ERROR;
+    updateI2CStatus();
+    return 0;
+}
+
  // ----------------------------------------------------------------------------
  // Rotary Switch and LED Control
  // ----------------------------------------------------------------------------
@@ -320,28 +380,29 @@
      Serial.println(position);
  }
  
- void updateLEDsBasedOnPosition() {
-     uint8_t ledState = 0x00; // Initialize all LEDs to off
- 
-     if (digitalRead(ROTR_01) == HIGH) {
-         ledState |= (1 << 4); // Turn on LED_5
-     } else if (digitalRead(ROTR_05) == HIGH) {
-         ledState |= (1 << 0); // Turn on LED_1
-     } else if (digitalRead(ROTR_02) == HIGH) {
-         ledState |= (1 << 3); // Turn on LED_4
-     } else if (digitalRead(ROTR_06) == HIGH) {
-         ledState |= (1 << 1); // Turn on LED_2
-     } else if (digitalRead(ROTR_03) == HIGH) {
-         ledState |= (1 << 2); // Turn on LED_3
-     } else if (digitalRead(ROTR_07) == HIGH) {
-         ledState |= (1 << 6); // Turn on LED_7
-     } else if (digitalRead(ROTR_04) == HIGH) {
-         ledState |= (1 << 5); // Turn on LED_6
-     } else if (digitalRead(ROTR_08) == HIGH) {
-         ledState |= (1 << 7); // Turn on LED_8
-     }
- 
-     writeOutputPort(ledState); // Update the LED states
+void updateLEDsBasedOnPosition() {
+    uint32_t ledState = 0x00; // Initialize all LEDs to off
+    if (digitalRead(ROTR_01) == HIGH) {
+        ledState = (1 << 12); // S
+    } else if (digitalRead(ROTR_02) == HIGH) {
+        ledState = (1 << 11); // SW
+    } else if (digitalRead(ROTR_03) == HIGH) {
+        ledState = (1 << 10); // W
+    } else if (digitalRead(ROTR_04) == HIGH) {
+        ledState = (1 << 7); // NW
+    } else if (digitalRead(ROTR_05) == HIGH) {
+        ledState = (1 << 14); // N
+    } else if (digitalRead(ROTR_06) == HIGH) {
+        ledState = (1 << 17); // NE
+    } else if (digitalRead(ROTR_07) == HIGH) {
+        ledState = (1 << 16); // E
+    } else if (digitalRead(ROTR_08) == HIGH) {
+        ledState = (1 << 15); // SE
+    } else {
+        ledState = (1 << 13); // Red LED in middle
+    }
+
+    writeOutputPort(ledState); // Update the I2C expander with the new LED state
  }
  
  // ----------------------------------------------------------------------------
