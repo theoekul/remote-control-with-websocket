@@ -127,9 +127,14 @@
    WiFi.mode(WIFI_STA);
    WiFi.begin(WIFI_SSID, WIFI_PASS);
    Serial.printf("Trying to connect [%s] ", WiFi.macAddress().c_str());
-   while (WiFi.status() != WL_CONNECTED) {
+   unsigned long startAttemptTime = millis();
+   while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 30000) { // 30 seconds timeout
        Serial.print(".");
        delay(500);
+   }
+   if (WiFi.status() != WL_CONNECTED) {
+       Serial.println("Failed to connect to WiFi");
+       return;
    }
    Serial.printf(" %s\n", WiFi.localIP().toString().c_str());
  }
@@ -437,3 +442,4 @@
      Serial.println(inputState, BIN);
      strip.show();
  }
+
