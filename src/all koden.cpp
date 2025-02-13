@@ -4,7 +4,7 @@
  * ----------------------------------------------------------------------------
  * © 2020 Stéphane Calderoni
  * ----------------------------------------------------------------------------
- */
+
 
 #include <Arduino.h>
 #include <SPIFFS.h>
@@ -129,7 +129,7 @@ void initWiFi() { // This function connects to the WiFi network
   unsigned long startAttemptTime = millis();
   while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 30000) { // 30 seconds timeout
       Serial.print("-");
-      delay(500);
+    delay(500);  // Delay for half a second
   }
   if (WiFi.status() != WL_CONNECTED) {
       Serial.println("Failed to connect to WiFi");
@@ -161,14 +161,14 @@ void initWebServer() { // This function sets up the web server
     server.on("/", onRootRequest);
     server.serveStatic("/", SPIFFS, "/");
     server.begin();
-   StaticJsonDocument<200> json;
+}
 
 // ----------------------------------------------------------------------------
 // WebSocket initialization
 // ----------------------------------------------------------------------------
 
 void notifyClients() { // This function sends messages to all clients connected to the WebSocket
-   DynamicJsonDocument json(200);
+   JsonDocument json(200);
     json["status"] = led.on ? "on" : "off";
     json["status_vu"] = analogRead(A0);
 
@@ -226,9 +226,7 @@ void onEvent(AsyncWebSocket       *server, // This function handles events from 
     }
 }
 
-        strip.show();
-        delay(500);  // Delay for half a second
-    }
+void initWebSocket() {
     ws.onEvent(onEvent);
     server.addHandler(&ws);
 }
@@ -385,36 +383,37 @@ void loop() {
     else if (digitalRead(ROTR_02) == HIGH) strip.setPixelColor(0, 255, 165, 0); // Orange for SW
     else if (digitalRead(ROTR_03) == HIGH) strip.setPixelColor(0, 255, 255, 0); // Yellow for W
     else if (digitalRead(ROTR_04) == HIGH) strip.setPixelColor(0, 0, 255, 0); // Green for NW
-    delay(500); // Adjust the delay as needed
+    else if (digitalRead(ROTR_06) == HIGH) strip.setPixelColor(0, 75, 0, 130); // Indigo for NE
     else if (digitalRead(ROTR_06) == HIGH) strip.setPixelColor(0, 75, 0, 130); // Indigo for NE
     else if (digitalRead(ROTR_07) == HIGH) strip.setPixelColor(0, 238, 130, 238); // Violet for E
+    else if (digitalRead(ROTR_08) == HIGH) strip.setPixelColor(0, 255, 255, 255); // White for SE
     else if (digitalRead(ROTR_08) == HIGH) strip.setPixelColor(0, 255, 255, 255); // White for SE
     strip.show();
     button.read();
 
     // Call the function to read the rotary switch position
-    readRotarySwitch();
+    delay(500); // Adjust the delay as needed
     delay(500); // Adjust the delay as needed;
 
     if (button.pressed()) {
         Serial.printf(" %s\n", WiFi.localIP().toString().c_str());
         led.on = !led.on;
         if (led.on) {
-            strip.setPixelColor(0, 100, 0, 0);
         unsigned long currentMillis = millis();
         if (currentMillis - previousMillis >= 200) {
             previousMillis = currentMillis;
             notifyClients();
             previousAnalog = meas;
         }
-            strip.setPixelColor(0, 0, 0, 0);
-        }        
+        strip.setPixelColor(0, 0, 0, 0);
         notifyClients();
     }
-
     delay(500);
+    }
+
     
-    if ((meas > previousAnalog + 30) || (meas < previousAnalog - 30)) { //Denne delen av koden er for å oppdatere SWR displayet
+    
+    if ((meas > previousAnalog + 30) || (meas < previousAnalog - 30)) { // Denne delen av koden er for å oppdatere SWR displayet
         unsigned long currentMillis = millis();
         if (currentMillis - previousMillis >= 200) {
             // save the last time you blinked the LED
@@ -429,3 +428,4 @@ void loop() {
     strip.show();
 }
 
+ */

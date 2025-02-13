@@ -1,4 +1,4 @@
-/*
+
 #ifndef SWRLED_H_
 #define SWRLED_H_
 
@@ -22,4 +22,3 @@ void initSWRDisplay();
 #endif
 
 #endif /* ROTSWITCH_H_ */
-*/
