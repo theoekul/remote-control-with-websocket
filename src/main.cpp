@@ -36,6 +36,13 @@
 // Definition of global constants
 // ----------------------------------------------------------------------------
 
+
+uint8_t wanted_dir = 0;
+uint8_t actual_dir = 0;
+uint8_t lastRotaryDir = 0;
+
+unsigned long lastNotifyClientMillis;
+
 // Button debouncing
 const uint8_t DEBOUNCE_DELAY = 10; // in milliseconds
 
@@ -172,16 +179,7 @@ void initWebServer() {
 void notifyClients() {
     JsonDocument json;
     json["status"] = led.on ? "on" : "off";
-    json["status_vu"] = analogRead(A0);
-
-    // Get the status of all 8 LEDs connected to the I2C expander (PORT1 and PORT2)
-    uint8_t port1_status = ioex1.input(TCA9539::Port::PORT1); // Read PORT1
-    uint8_t port2_status = ioex1.input(TCA9539::Port::PORT2); // Read PORT2
-
-    // Send the status of all LEDs (8 LEDs in total)
-    for (int i = 0; i < 8; i++) {
-        json["led" + String(i + 1)] = ((i < 4) ? ((port1_status >> i) & 1) : ((port2_status >> (i - 4)) & 1)) ? "on" : "off";
-    }
+    json["dir"] = actual_dir;
 
     char buffer[300];
     size_t len = serializeJson(json, buffer);
@@ -262,7 +260,9 @@ void setup() {
     initWebSocket();
     initWebServer();
     initStrip();
-    //initRotarySwitch();
+    initRotarySwitch();
+    lastRotaryDir = readRotarySwitch();
+    
     //initSWRLEDs();
     strip.setPixelColor(0, 0, 50, 0);
     strip.show();
@@ -283,8 +283,40 @@ void setup() {
 void loop() {
     ws.cleanupClients();
 
-    button.read();
+    // Send state update to web clients once every second
+    if (millis() - lastNotifyClientMillis >= 1000UL) 
+    {
+        lastNotifyClientMillis = millis();  //get ready for the next iteration
+        notifyClients();
+    }
 
+
+   
+    // Check rotary switch for changes
+    uint8_t newDir = readRotarySwitch();
+    if (lastRotaryDir != newDir) {
+        // Setting of rotary switch changed
+        // Update wanted direction
+        wanted_dir = newDir;
+    }
+    
+
+    
+    // check if a new direction is wanted:
+    if (actual_dir != wanted_dir)
+    {
+        // Check here if it is safe to switch direction, always true for now
+        if (true)
+        {
+            /* switch the actual relays here */
+            actual_dir = wanted_dir; // update the actual direction variable
+            notifyClients();
+        }
+    }
+
+
+
+    button.read();
     if (button.pressed()) {
         Serial.printf(" %s\n", WiFi.localIP().toString().c_str());
         led.on = !led.on;
@@ -294,7 +326,7 @@ void loop() {
             strip.setPixelColor(0, 0, 0, 0);
         }        
         notifyClients();
-
+        /*
         // Set all pins(8) on entire port:
         ioex1.output(TCA9539::Port::PORT2, 0xFF);
         delay(1000);
@@ -306,6 +338,7 @@ void loop() {
         delay(1000);
         ioex1.output(TCA9539::Port::PORT2, 2, 0);
         delay(1000);
+        */
     }
     strip.show();
     led.update();
