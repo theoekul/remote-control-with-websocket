@@ -174,7 +174,16 @@ void notifyClients() {
     json["status"] = led.on ? "on" : "off";
     json["status_vu"] = analogRead(A0);
 
-    char buffer[200];
+    // Get the status of all 8 LEDs connected to the I2C expander (PORT1 and PORT2)
+    uint8_t port1_status = ioex1.input(TCA9539::Port::PORT1); // Read PORT1
+    uint8_t port2_status = ioex1.input(TCA9539::Port::PORT2); // Read PORT2
+
+    // Send the status of all LEDs (8 LEDs in total)
+    for (int i = 0; i < 8; i++) {
+        json["led" + String(i + 1)] = ((i < 4) ? ((port1_status >> i) & 1) : ((port2_status >> (i - 4)) & 1)) ? "on" : "off";
+    }
+
+    char buffer[300];
     size_t len = serializeJson(json, buffer);
     ws.textAll(buffer, len);
 }
