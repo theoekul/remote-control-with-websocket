@@ -40,7 +40,14 @@ h1 {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-#led {
+#dirledcontainer {
+  text-align: center; 
+  width: 50em; 
+  display: flex; 
+  justify-content: center;
+}
+
+[id^="led"] {
   position: relative;
   width: 5em;
   height: 5em;
@@ -49,11 +56,12 @@ h1 {
   background-image: radial-gradient(farthest-corner at 50% 20%, #b30000 0%, #330000 100%);
   box-shadow: 0 0.5em 1em rgba(102, 0, 0, 0.3);
 }
-#led.on {
+[id^="led"].on {
   background-image: radial-gradient(farthest-corner at 50% 75%, red 0%, #990000 100%);
   box-shadow: 0 1em 1.5em rgba(255, 0, 0, 0.5);
 }
-#led:after {
+
+[id^="led"]:after {
   content: '';
   position: absolute;
   top: .3em;

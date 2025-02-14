@@ -11,170 +11,55 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="index.css">
   <script src="index.js"></script>
-  <style>
-    /* Dark theme styling */
-    body {
-      background-color: #811e1e; /* Black background */
-      color: #800606; /* Light text */
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-
-    h1, h3 {
-      color: #000000;
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .panel {
-      text-align: center;
-      padding: 20px;
-      background: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-      max-width: 80%;
-      margin: auto;
-    }
-
-    button {
-      background-color: #007bff;
-      color: rgb(0, 0, 0);
-      border: none;
-      padding: 15px 30px;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-top: 20px;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #000000;
-    }
-
-    /* Styling for LED visual indicators */
-    .led-status {
-      display: inline-block;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      margin: 10px;
-      background-color: #000000; /* Default (off) color */
-      transition: background-color 0.3s ease;
-    }
-
-    .on {
-      background-color: rgb(0, 0, 0); /* LED on (active) */
-    }
-
-    .off {
-      background-color: rgb(0, 0, 0); /* LED off (inactive) */
-    }
-
-    #led-panel {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .led-container {
-      text-align: center;
-      margin: 10px;
-      color: #000000;
-    }
-
-    .led-label {
-      margin-top: 5px;
-    }
-
-  </style>
 </head>
 
 <body>
   <div class="panel">
-    <h1>ESP32 Remote Control</h1>
-    
-    <!-- Main LED toggle section -->
+    <h1>ESP32 remote control</h1>
     <div id="led" class="%STATE%"></div>
-    <button id="toggle">Toggle Main LED</button>
-
-    <!-- Section for displaying the 8 individual I2C LEDs -->
-    <div class="status">
-      <h3>LED Status (I2C Expander):</h3>
-      <div id="led-panel">
-        <!-- Each individual LED status will be dynamically inserted here -->
-        <div class="led-container" id="led1-container">
-          <div class="led-status" id="status_led1"></div>
-          <div class="led-label">LED1</div>
+    <button id="toggle">toggle</button>
+    <div id="dirledcontainer">
+        <div>
+          <button id="toggle">N</button>
+          <div id="led_dir_1" class="%STATE%"></div>
+          <div>N</div>
         </div>
-        <div class="led-container" id="led2-container">
-          <div class="led-status" id="status_led2"></div>
-          <div class="led-label">LED2</div>
+        <div>
+          <button id="dirbtn">NE</button>
+          <div id="led_dir_2" class="%STATE%"></div>
+          <div>NE</div>
         </div>
-        <div class="led-container" id="led3-container">
-          <div class="led-status" id="status_led3"></div>
-          <div class="led-label">LED3</div>
+        <div>
+          <button id="dirbtn">E</button>
+          <div id="led_dir_3" class="%STATE%"></div>
+          <div>E</div>
         </div>
-        <div class="led-container" id="led4-container">
-          <div class="led-status" id="status_led4"></div>
-          <div class="led-label">LED4</div>
+        <div>
+          <button id="dirbtn">SE</button>
+          <div id="led_dir_4" class="%STATE%"></div>
+          <div>SE</div>
         </div>
-        <div class="led-container" id="led5-container">
-          <div class="led-status" id="status_led5"></div>
-          <div class="led-label">LED5</div>
+        <div>
+          <button id="dirbtn">S</button>
+          <div id="led_dir_5" class="%STATE%"></div>
+          <div>S</div>
         </div>
-        <div class="led-container" id="led6-container">
-          <div class="led-status" id="status_led6"></div>
-          <div class="led-label">LED6</div>
+        <div>
+          <button id="dirbtn">SW</button>
+          <div id="led_dir_6" class="%STATE%"></div>
+          <div>SW</div>
         </div>
-        <div class="led-container" id="led7-container">
-          <div class="led-status" id="status_led7"></div>
-          <div class="led-label">LED7</div>
+        <div>
+          <button id="dirbtn">W</button>
+          <div id="led_dir_7" class="%STATE%"></div>
+          <div>W</div>
         </div>
-        <div class="led-container" id="led8-container">
-          <div class="led-status" id="status_led8"></div>
-          <div class="led-label">LED8</div>
+        <div>
+          <button id="dirbtn">NW</button>
+          <div id="led_dir_8" class="%STATE%"></div>
+          <div>NW</div>
         </div>
-      </div>
     </div>
   </div>
-
-  <script>
-    var ws = new WebSocket('ws://' + window.location.hostname + '/ws');
-
-    // WebSocket connection established
-    ws.onopen = function() {
-      console.log('Connected to WebSocket');
-    };
-
-    // Handle WebSocket messages
-    ws.onmessage = function(event) {
-      var message = JSON.parse(event.data);
-      console.log(message);
-
-      // Update the main LED status (for the main LED control)
-      document.getElementById('led').className = message.status === 'on' ? 'on' : 'off';
-
-      // Update the status of each I2C LED by changing the color (green = on, red = off)
-      for (let i = 1; i <= 8; i++) {
-        let status = message["led" + i];
-        let ledStatusElement = document.getElementById("status_led" + i);
-        if (status === 'on') {
-          ledStatusElement.classList.add("on");
-          ledStatusElement.classList.remove("off");
-        } else {
-          ledStatusElement.classList.add("off");
-          ledStatusElement.classList.remove("on");
-        }
-      }
-    };
-
-    // Existing toggle button for the main LED
-    document.getElementById('toggle').onclick = function() {
-      ws.send(JSON.stringify({ action: 'toggle' }));
-    };
-  </script>
 </body>
-
 </html>
