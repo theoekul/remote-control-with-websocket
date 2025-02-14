@@ -297,6 +297,7 @@ void loop() {
     if (lastRotaryDir != newDir) {
         // Setting of rotary switch changed
         // Update wanted direction
+        lastRotaryDir = newDir;
         wanted_dir = newDir;
     }
     
