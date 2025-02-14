@@ -19,7 +19,7 @@ window.addEventListener('load', onLoad);
 function onLoad(event) {
     initWebSocket();
     initButton();
-    initVU();
+    //initVU();
 }
 
 // ----------------------------------------------------------------------------
@@ -46,15 +46,16 @@ function onClose(event) {
 function onMessage(event) {
     let data = JSON.parse(event.data);
     document.getElementById('led').className = data.stat;
-    document.getElementById('led_dir_1').className = data.led1;
-    document.getElementById('led_dir_2').className = data.led2;
-    document.getElementById('led_dir_3').className = data.led3;
-    document.getElementById('led_dir_4').className = data.led4;
-    document.getElementById('led_dir_5').className = data.led5;
-    document.getElementById('led_dir_6').className = data.led6;
-    document.getElementById('led_dir_7').className = data.led7;
-    document.getElementById('led_dir_8').className = data.led8;
-    document.getElementById('reflected').setAttribute('data-val', data.stat_vu);
+
+    //let index = 4;
+    //document.getElementById('led_dir_'+index).className = "on";
+    for (let index = 1; index <= 8; index++) {
+        if (index == data.dir) {
+            document.getElementById('led_dir_'+index).className = "on";
+        } else {
+            document.getElementById('led_dir_'+index).className = "off";
+        }
+    }
 }
 
 // ----------------------------------------------------------------------------

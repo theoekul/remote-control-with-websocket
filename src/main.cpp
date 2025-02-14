@@ -208,6 +208,31 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
             }   
             notifyClients();
         }
+        if (strcmp(action, "NN") == 0) {
+            wanted_dir = 1;
+        }
+        if (strcmp(action, "NE") == 0) {
+            wanted_dir = 2;
+        }
+        if (strcmp(action, "E") == 0) {
+            wanted_dir = 3;
+        }
+        if (strcmp(action, "SE") == 0) {
+            wanted_dir = 4;
+        }
+        if (strcmp(action, "S") == 0) {
+            wanted_dir = 5;
+        }
+        if (strcmp(action, "SW") == 0) {
+            wanted_dir = 6;
+        }
+        if (strcmp(action, "W") == 0) {
+            wanted_dir = 7;
+        }
+        if (strcmp(action, "NW") == 0) {
+            wanted_dir = 8;
+        }
+
 
     }
 }
@@ -263,7 +288,7 @@ void setup() {
     initRotarySwitch();
     lastRotaryDir = readRotarySwitch();
     
-    //initSWRLEDs();
+    initSWRDisplay();
     strip.setPixelColor(0, 0, 50, 0);
     strip.show();
 
@@ -288,6 +313,8 @@ void loop() {
     {
         lastNotifyClientMillis = millis();  //get ready for the next iteration
         notifyClients();
+        
+        Serial.printf("SWR meas: %d\n", analogRead(16));
     }
 
 
@@ -315,8 +342,9 @@ void loop() {
         }
     }
 
+    setSWRLeds(map(analogRead(16),0,4095,0,10));
 
-
+    
     button.read();
     if (button.pressed()) {
         Serial.printf(" %s\n", WiFi.localIP().toString().c_str());
